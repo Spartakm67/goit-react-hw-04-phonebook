@@ -35,8 +35,7 @@ export const App = () => {
   useEffect(() => {
     localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
-  //========================================================================
-
+  
   const handleInputChange = event => {
     setFilter(event.target.value);
   };
@@ -64,7 +63,7 @@ export const App = () => {
       contact.name.toLowerCase().includes(filter.toLowerCase())
     );
   };
-  //=======HW3 Extra function for Default Contacts==================================
+  
   const addDefaultContacts = () => {
         
     setTimeout(() => {
@@ -74,9 +73,7 @@ export const App = () => {
     Notiflix.Notify.failure(`Really??? :)`);
     return;
   };
-  //================================================================================
-  // render() {
-  //   const { filter, contacts } = this.state;
+  
   return (
     <Container>
         
@@ -99,7 +96,6 @@ export const App = () => {
         
     </Container>);
 };
-
 
 Notiflix.Notify.init({
   position: 'right-top',
