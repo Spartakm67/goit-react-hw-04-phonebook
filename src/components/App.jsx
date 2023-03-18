@@ -1,125 +1,105 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, IfEmpty, DefaultButton } from "./App.styled"; 
 import { ContactsForm } from "./ContactsForm/ContactsForm";
 import { ContactsFormList } from './ContactsFormList/ContactsFormList';
 import { Filter } from './Filter/Filter';
 import Notiflix from 'notiflix';
 
-export class App extends Component {
-state = {
-    contacts: [
+export const App = () => {
+
+  const defaultContacts =
+    [
       { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
       { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
       { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
       { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+    ];
+  
+  const [filter, setFilter] = useState('');
+  
+  const [contacts, setContacts] = useState(() => {
+  
+    const actualContacts = localStorage.getItem('contacts');
+  
+    if (actualContacts === null) {
+      return defaultContacts;
+    }
 
-  //======== HW3 Methods Added=============================================
-componentDidMount() {
-  console.log('App componentDidUpdate');
-  
-  const defaultContacts = this.state.contacts;
-  console.log('Default Contacts', defaultContacts);
-  this.setState({ defaultContacts: defaultContacts });
-  
-  const actualContacts = localStorage.getItem('contacts');
-  
-  if (actualContacts !== null) {
     const parsedContacts = JSON.parse(actualContacts);
     console.log('Parsed Contacts', parsedContacts);
-    this.setState({ contacts: parsedContacts });
-    return;
-  }  
-};
-
-componentDidUpdate(_, prevState) {
-
-  if (this.state.contacts !== prevState.contacts) {
-    console.log('Contacts Updated');
-
-    localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    
+    return parsedContacts;
   }
-};
-//========================================================================
+  );
 
-  handleInputChange = event => {
-    this.setState({ filter: event.target.value });
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+  //========================================================================
+
+  const handleInputChange = event => {
+    setFilter(event.target.value);
   };
 
-  addContact = newContact => {
+  const addContact = newContact => {
     
-    const isNameExists = this.state.contacts.find(contact =>
+    const isNameExists = contacts.find(contact =>
       contact.name.toLowerCase() === newContact.name.toLowerCase());
     
     if (isNameExists) {
       Notiflix.Notify.failure(`${newContact.name} is already in contacts`);
       return;
     }
-
-    this.setState(prevState => {
-      return {
-        contacts: [...prevState.contacts, newContact],
-      };
-    });
+    setContacts([...contacts, newContact]);
   };
 
-  deleteContact = id => {
-    this.setState(prevState => {
-      return {
-        contacts: prevState.contacts.filter(
-          contact => contact.id !== id
-        ),
-      };
-    });
+  const deleteContact = id => {
+    setContacts(contacts.filter(
+      contact => contact.id !== id));
   };
 
-  showContacts = () => {
-    const { filter, contacts } = this.state;
-
+  const showContacts = () => {
+    
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(filter.toLowerCase())
     );
   };
-//=======HW3 Extra function for Default Contacts==================================
-  addDefaultContacts = () => {
+  //=======HW3 Extra function for Default Contacts==================================
+  const addDefaultContacts = () => {
         
-    console.log('Default Contacts Clicked &:', this.state.defaultContacts );
-    
     setTimeout(() => {
-    this.setState({ contacts: this.state.defaultContacts });
-  }, 2000);
+      setContacts(defaultContacts);
+    }, 2000);
     
     Notiflix.Notify.failure(`Really??? :)`);
-      return;
+    return;
   };
-//================================================================================
-  render() {
-    const { filter, contacts } = this.state;
-    return (
-      <Container>
+  //================================================================================
+  // render() {
+  //   const { filter, contacts } = this.state;
+  return (
+    <Container>
         
-       <h1>Phonebook</h1>
-        <ContactsForm onSubmit={this.addContact} />
-        <h2>Contacts</h2>
-        <Filter value={filter} onChange={this.handleInputChange} />
-        {contacts.length > 0 ? (
-          <ContactsFormList
-            items={this.showContacts()}
-            onDelete={this.deleteContact}
-          />
-        ) : (
-            <><IfEmpty> Phonebook is empty</IfEmpty>
-              <DefaultButton type='button' onClick={this.addDefaultContacts}>
-                Click to Add Default Contacts
-              </DefaultButton>
-            </>
-        )}
+      <h1>Phonebook</h1>
+      <ContactsForm onSubmit={addContact} />
+      <h2>Contacts</h2>
+      <Filter value={filter} onChange={handleInputChange} />
+      {contacts.length > 0 ? (
+        <ContactsFormList
+          items={showContacts()}
+          onDelete={deleteContact}
+        />
+      ) : (
+        <><IfEmpty> Phonebook is empty</IfEmpty>
+          <DefaultButton type='button' onClick={addDefaultContacts}>
+            Click to Add Default Contacts
+          </DefaultButton>
+        </>
+      )}
         
     </Container>);
-  }
-}
+};
+
 
 Notiflix.Notify.init({
   position: 'right-top',
